@@ -57,6 +57,9 @@ def send_test_email(config: dict[str, Any]) -> tuple[bool, str]:
 
         if use_tls:
             context = ssl.create_default_context()
+            # QQ 邮箱等国内服务可能拒绝默认 TLS 协商，强制兼容配置
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
             with smtplib.SMTP(smtp_server, smtp_port, timeout=30) as server:
                 server.ehlo()
                 server.starttls(context=context)
@@ -64,7 +67,10 @@ def send_test_email(config: dict[str, Any]) -> tuple[bool, str]:
                 server.login(sender_email, sender_password)
                 server.sendmail(sender_email, recipient, msg.as_string())
         else:
-            with smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=30) as server:
+            context = ssl.create_default_context()
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
+            with smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=30, context=context) as server:
                 server.login(sender_email, sender_password)
                 server.sendmail(sender_email, recipient, msg.as_string())
 
@@ -117,6 +123,8 @@ def send_daily_report(
 
         if use_tls:
             context = ssl.create_default_context()
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
             with smtplib.SMTP(smtp_server, smtp_port, timeout=60) as server:
                 server.ehlo()
                 server.starttls(context=context)
@@ -124,7 +132,10 @@ def send_daily_report(
                 server.login(sender_email, sender_password)
                 server.sendmail(sender_email, recipient, msg.as_string())
         else:
-            with smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=60) as server:
+            context = ssl.create_default_context()
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
+            with smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=60, context=context) as server:
                 server.login(sender_email, sender_password)
                 server.sendmail(sender_email, recipient, msg.as_string())
 
